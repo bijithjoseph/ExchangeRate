@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +35,9 @@ public class CurrencyExchangeController implements ExchangeRatesApi {
 
     @Override
     public ResponseEntity<Resource> generateAverageCurrencyRateReport(Currency baseCurrency, UUID xRequestID) {
-
+        if (null == xRequestID) {
+            xRequestID = UUID.randomUUID();
+        }
         String xml = null;
         try {
             xml = xmlMapperProvider.getObjectMapper().writeValueAsString(exchangeRateFetchService.generateAverageCurrencyRate(baseCurrency, xRequestID));
@@ -57,18 +58,22 @@ public class CurrencyExchangeController implements ExchangeRatesApi {
 
     @Override
     public ResponseEntity<ExchangeSummary> getCurrencyExchangeQuote(Currency baseCurrency, Currency quoteCurrency, BigDecimal baseCurrencyAmount, UUID xRequestID) {
+        if (null == xRequestID) {
+            xRequestID = UUID.randomUUID();
+        }
         return new ResponseEntity<>(exchangeRateFetchService.getExchangeQuote(baseCurrency, quoteCurrency, baseCurrencyAmount, xRequestID), getResponseHeaders(xRequestID), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<ExchangeRateDetail> getExchangeRate(Currency baseCurrency, UUID xRequestID, OffsetDateTime dateTime) {
+        if (null == xRequestID) {
+            xRequestID = UUID.randomUUID();
+        }
         return new ResponseEntity<>(exchangeRateFetchService.getExchangeRate(baseCurrency, dateTime, xRequestID), getResponseHeaders(xRequestID), HttpStatus.OK);
     }
 
     private HttpHeaders getResponseHeaders(UUID xRequestID) {
-        if (null == xRequestID) {
-            xRequestID = UUID.randomUUID();
-        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-Request-ID", String.valueOf(xRequestID));
         return headers;
