@@ -5,7 +5,7 @@ import eu.nets.uni.apps.settlement.interview.exception.ExchangeRateNotFoundExcep
 import eu.nets.uni.apps.settlement.interview.model.Currency;
 import eu.nets.uni.apps.settlement.interview.model.ExchangeRateDetail;
 import eu.nets.uni.apps.settlement.interview.model.ExchangeSummary;
-import eu.nets.uni.apps.settlement.interview.service.model.XmlObjectDTO;
+import eu.nets.uni.apps.settlement.interview.service.model.ConversionRate;
 import eu.nets.uni.apps.settlement.interview.repository.CurrencyExchangeRateRepository;
 import eu.nets.uni.apps.settlement.interview.service.mapper.ExchangeRateObjectMapper;
 import eu.nets.uni.apps.settlement.interview.service.model.ReportDTO;
@@ -64,7 +64,7 @@ public class ExchangeRateFetchService {
     }
 
 
-    public XmlObjectDTO generateAverageCurrencyRate(Currency baseCurrency, UUID xRequestID) {
+    public ConversionRate generateAverageCurrencyRate(Currency baseCurrency, UUID xRequestID) {
         logger.info("Generating exchange rate report for base currency {}, requestId {}",baseCurrency, xRequestID);
         LocalDateTime fromTime = LocalDateTime.now(ZoneId.systemDefault()).minus(reportPeriod);
         List<ExchangeRateDocument> rates = repository.findByBaseCurrencyAndTimestampGreaterThanOrderByTimestampAsc(baseCurrency, fromTime);
@@ -79,6 +79,6 @@ public class ExchangeRateFetchService {
                 .collect(groupingBy(ReportDTO::getTime
                         , groupingBy(ReportDTO::getQuoteCurrency, averagingDouble(ReportDTO::getRate))));
 
-        return new XmlObjectDTO(conversionRatesAvg, baseCurrency);
+        return new ConversionRate(conversionRatesAvg, baseCurrency);
     }
 }

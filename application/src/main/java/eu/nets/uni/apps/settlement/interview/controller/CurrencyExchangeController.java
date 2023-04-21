@@ -38,7 +38,7 @@ public class CurrencyExchangeController implements ExchangeRatesApi {
         if (null == xRequestID) {
             xRequestID = UUID.randomUUID();
         }
-        String xml = null;
+        String xml;
         try {
             xml = xmlMapperProvider.getObjectMapper().writeValueAsString(exchangeRateFetchService.generateAverageCurrencyRate(baseCurrency, xRequestID));
         } catch (JsonProcessingException e) {

@@ -8,7 +8,7 @@ import eu.nets.uni.apps.settlement.interview.model.ExchangeRateDetail;
 import eu.nets.uni.apps.settlement.interview.model.ExchangeSummary;
 import eu.nets.uni.apps.settlement.interview.repository.CurrencyExchangeRateRepository;
 import eu.nets.uni.apps.settlement.interview.service.mapper.ExchangeRateObjectMapper;
-import eu.nets.uni.apps.settlement.interview.service.model.XmlObjectDTO;
+import eu.nets.uni.apps.settlement.interview.service.model.ConversionRate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +79,7 @@ class ExchangeRateFetchServiceTest {
 
     @Test
     void generateAverageCurrencyRateReport() {
-        XmlObjectDTO averageCurrencyRate = service.generateAverageCurrencyRate(Currency.EUR, UUID.randomUUID());
+        ConversionRate averageCurrencyRate = service.generateAverageCurrencyRate(Currency.EUR, UUID.randomUUID());
         assertNotNull(averageCurrencyRate);
         assertEquals(1, averageCurrencyRate.getTime().size());
     }

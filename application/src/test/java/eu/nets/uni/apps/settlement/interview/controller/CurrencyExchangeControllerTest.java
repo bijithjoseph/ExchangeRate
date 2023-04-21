@@ -4,7 +4,7 @@ import eu.nets.uni.apps.settlement.interview.model.Currency;
 import eu.nets.uni.apps.settlement.interview.model.ExchangeRateDetail;
 import eu.nets.uni.apps.settlement.interview.model.ExchangeSummary;
 import eu.nets.uni.apps.settlement.interview.service.ExchangeRateFetchService;
-import eu.nets.uni.apps.settlement.interview.service.model.XmlObjectDTO;
+import eu.nets.uni.apps.settlement.interview.service.model.ConversionRate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -69,7 +69,7 @@ class CurrencyExchangeControllerTest {
     @Test
     void should_generate_xml_report() throws Exception {
         Map<String, Map<String, Double>> time = new HashMap<>();
-        XmlObjectDTO dto = new XmlObjectDTO(time, Currency.EUR);
+        ConversionRate dto = new ConversionRate(time, Currency.EUR);
         when(exchangeRateService.generateAverageCurrencyRate(eq(Currency.EUR), any(UUID.class))).thenReturn(dto);
         this.mockMvc.perform(MockMvcRequestBuilders.get("/exchange-rates/EUR/report").accept(MediaType.APPLICATION_XML))
                 .andExpect(status().isOk());

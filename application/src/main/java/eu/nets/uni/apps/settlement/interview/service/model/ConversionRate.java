@@ -8,11 +8,11 @@ import java.util.Map;
 
 @Getter
 @XmlRootElement(name = "Conversion-Report")
-public class XmlObjectDTO {
+public class ConversionRate {
     private final Currency baseCurrency;
     private final Map<String, Map<String, Double>> time;
 
-    public XmlObjectDTO(Map<String, Map<String, Double>> conversionRatesAvg, Currency baseCurrency) {
+    public ConversionRate(Map<String, Map<String, Double>> conversionRatesAvg, Currency baseCurrency) {
         this.time = conversionRatesAvg;
         this.baseCurrency = baseCurrency;
     }
