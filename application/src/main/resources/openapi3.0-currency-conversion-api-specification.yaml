@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: Currency conversion service API
+  description: |
+    **Overview**
+    
+    A service to fetch latest exchange rates for base currency, Exchange rates for base currency at given time,
+    Calculate a currency exchange amount, from amount in base-currency to currency, based on the latest rate and also 
+    to download a report in xml lists average currency rates for the last 10 minutes grouped by minute.
+    
+    **Technical choices**
+    
+    Character case
+    
+    the following character case conventions are used
+    * UpperCamelCase for components Definitions name
+    * lowerCamelCase for properties name
+    * Hyphenated-Pascal-Case for header names
+    * spinal-case for path segments
+    * snake_case for path parameters
+    * snake_case for query parameters
+    
+    **API Resource Structure**
+    
+    Each API resource declared within this specification may include the following elements:
+    
+    * A resource identifier that can only be set by the API server
+    ---
+    ```
+    
+    The authorization is not yet implemented as part of this API 
+    
+    ```
+    
+    ---
+  contact:
+    name: Bijith Joseph
+    email: bijithjoseph@gmail.com
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8084/api/v1'
+    description: local environment
+  - url: 'https://exchangerate.uni.no/api/v1'
+    description: production environment
+tags:
+  - name: Exchange Rates
+    description: APIs to fetch exchange rates, conversion amount and report of exchange rates
+paths:
+  /exchange-rates/{base_currency}:
+    get:
+      tags:
+        - Exchange Rates
+      summary: Retrieve exchange rate
+      description: >
+        The latest exchange rates for a specific base currency can be retrieved
+      operationId: getExchangeRate
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/BaseCurrency'
+        - $ref: '#/components/parameters/DateTime'
+      responses:
+        '200':
+          $ref: '#/components/responses/ExchangeRateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundResponse'
+  /exchange-rates/{base_currency}/{quote_currency}:
+    get:
+      tags:
+        - Exchange Rates
+      summary: get quote for currency exchange
+      description: >-
+        Calculate a currency exchange amount, from amount in base-currency to currency, based on the latest rate
+      operationId: getCurrencyExchangeQuote
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/BaseCurrency'
+        - $ref: '#/components/parameters/QuoteCurrency'
+        - $ref: '#/components/parameters/BaseAmount'
+      responses:
+        '200':
+          $ref: '#/components/responses/CurrencyExchangeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundResponse'
+  /exchange-rates/{base_currency}/report:
+    get:
+      tags:
+        - Exchange Rate Report
+      summary: Find exchangeRate
+      description: >-
+        Download a report in CSV, XML or XLS(X) lists average currency rates for the last 10 minutes grouped by minute
+      operationId: generateAverageCurrencyRateReport
+      parameters:
+        - $ref: '#/components/parameters/X-Request-ID'
+        - $ref: '#/components/parameters/BaseCurrency'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+                description: the report as xml file
+        '400':
+          $ref: '#/components/responses/BadRequestErrorResponse'
+        '404':
+          $ref: '#/components/responses/ResourceNotFoundResponse'
+
+components:
+  headers:
+    X-Request-ID:
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426655440000
+      description: >-
+        A transient identifier for the service request,it is replayed back in the response.
+        It can be used by the client for tracing or correlating the request with a response if required.
+        The customers may chose to persist it if required.
+  parameters:
+    BaseCurrency:
+      name: base_currency
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Currency'
+    QuoteCurrency:
+      name: quote_currency
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Currency'
+    BaseAmount:
+      name: base_currency_amount
+      in: query
+      required: true
+      schema:
+        type: number
+        format: double
+        minimum: 0
+        description: >-
+          rate expressed as float number
+        example: 7.8978
+    X-Request-ID:
+      name: X-Request-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426655440000
+      description: >-
+        A transient identifier for the service request,it is replayed back in the response.
+        It can be used by the client for tracing or correlating the request with a response if required.
+        The customers may chose to persist it if required.
+    DateTime:
+      name: date_time
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/DateTime'
+  responses:
+    ExchangeRateResponse:
+      description: Exchange rate for the base currency provided is retrieved successfully
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExchangeRateDetail'
+    CurrencyExchangeResponse:
+      description: Exchange summary of the currency exchanged
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExchangeSummary'
+    BadRequestErrorResponse:
+      description: Bad request
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ResourceNotFoundResponse:
+      description: Resource not found
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/X-Request-ID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    ExchangeRateDetail:
+      type: object
+      required:
+        - baseCurrency
+        - exchangeRates
+        - timestamp
+      properties:
+        baseCurrency:
+          $ref: '#/components/schemas/Currency'
+        exchangeRateEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/RateEntry'
+        timestamp:
+          $ref: '#/components/schemas/DateTime'
+    ExchangeSummary:
+      type: object
+      required:
+        - baseCurrency
+        - quoteCurrency
+        - exchangeRate
+        - baseAmount
+        - quoteAmount
+        - quoteTime
+      properties:
+        baseCurrency:
+          $ref: '#/components/schemas/Currency'
+        quoteCurrency:
+          $ref: '#/components/schemas/Currency'
+        exchangeRate:
+          $ref: '#/components/schemas/NonZeroNumber'
+        baseAmount:
+          $ref: '#/components/schemas/NonZeroNumber'
+        quoteAmount:
+          $ref: '#/components/schemas/NonZeroNumber'
+        quoteTime:
+          $ref: '#/components/schemas/DateTime'
+    Currency:
+      type: string
+      enum: [ USD, JPY, BGN, CZK, DKK, GBP, HUF, PLN, RON, SEK, CHF, ISK, NOK, HRK, TRY,
+              AUD, BRL, CAD, CNY, HKD, IDR, ILS, INR, KRW, MXN, MYR, NZD, PHP, SGD, THB,
+              ZAR, EUR ]
+      description: Currency, format is ISO 4217 currency code [A-Z] 3
+      example: 'EUR'
+    RateEntry:
+      type: object
+      description: >-
+        exchange rate specific to each currency
+      required:
+        - currency
+        - rate
+      properties:
+        currency:
+          $ref: '#/components/schemas/Currency'
+        rate:
+          $ref: '#/components/schemas/NonZeroNumber'
+    NonZeroNumber:
+      type: number
+      format: double
+      minimum: 0
+      description: >-
+        rate expressed as float number
+      example: 7.8978
+    DateTime:
+      type: string
+      format: date-time
+      description: The date and time in  ISO 8601 format
+      example: "2023-01-30T08:30:00Z"
+    Error:
+      type: object
+      description: description of error
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          description: a number to identify the error
+          example: 100
+        message:
+          type: string
+          description: A human readable message about the error
+          example: The base currency field is invalid
+
+
