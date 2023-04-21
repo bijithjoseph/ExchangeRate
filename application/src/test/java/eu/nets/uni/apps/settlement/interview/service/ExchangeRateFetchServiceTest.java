@@ -39,7 +39,7 @@ class ExchangeRateFetchServiceTest {
     private ExchangeRateFetchService service;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         repository.deleteAll();
         time = LocalDateTime.now(ZoneId.of("UTC"));
         repository.save(generateExchangeRate(1L, time));
